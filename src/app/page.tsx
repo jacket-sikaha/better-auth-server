@@ -1,11 +1,9 @@
 "use client";
 import { signOutAction } from "@/lib/server-action";
 import { Button } from "antd";
-import { useSession, SessionProvider } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function Index() {
-  const session = useSession();
   const router = useRouter();
   return (
     <div className="px-10">
@@ -36,9 +34,7 @@ export default function Index() {
             onClick={() => {
               fetch("/ddd/test").then((res) => res.json());
             }}
-          >
-            {JSON.stringify(session, null, 4)}
-          </pre>
+          ></pre>
         </div>
       </div>
     </div>
