@@ -49,3 +49,5 @@ lib/test.txt
 lib/test2.txt
 .env
 lib/sql.ts
+
+/generated/prisma
