@@ -2,8 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
-import UserHeader from "@/components/client/user-header";
-import ThemeConfig from "@/components/client/theme-config";
+import { App } from "antd";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,12 +17,11 @@ export default function RootLayout({ children }: React.PropsWithChildren) {
     <html lang="en">
       <body className={inter.className}>
         <div className="h-svh w-full grid grid-rows-[auto_1fr]">
-          <ThemeConfig>
-            <UserHeader />
-            <AntdRegistry>
+          <AntdRegistry>
+            <App>
               <main className="h-full overflow-auto">{children}</main>
-            </AntdRegistry>
-          </ThemeConfig>
+            </App>
+          </AntdRegistry>
         </div>
       </body>
     </html>
