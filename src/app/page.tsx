@@ -1,8 +1,9 @@
 "use client";
 import { authClient } from "@/lib/auth-client";
-import { App } from "antd";
+import { App, Input } from "antd";
 import Image from "next/image";
 import { useState } from "react";
+const { Password } = Input;
 
 export default function LoginRegisterPage() {
   const { message, modal, notification } = App.useApp(); // 切换登录/注册标签
@@ -15,27 +16,71 @@ export default function LoginRegisterPage() {
     name: "", // 仅注册页使用
   });
 
+  const verifyEmail = () => {
+    modal.confirm({
+      title: "请验证您的邮箱地址",
+      content: "确认重新发送验证邮件吗？",
+      okText: "重新发送",
+      cancelText: "取消",
+      onOk: async () => {
+        await authClient.sendVerificationEmail(
+          {
+            email: formData.email,
+            callbackURL: "/",
+          },
+          {
+            onSuccess: (ctx) => {
+              message.success("验证邮件已重新发送");
+            },
+            onError: (ctx) => {
+              console.error("ctx:", ctx.error.message);
+              message.error("重新发送验证邮件失败" + ctx.error.message);
+            },
+          },
+        );
+      },
+    });
+  };
+
   // 处理表单输入变化
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // 处理表单提交
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       if (isLogin) {
         console.log("登录请求:", formData);
-        const { data, error } = await authClient.signIn.email({
-          email: formData.email,
-          password: formData.password,
-          callbackURL: "/dashboard",
-          rememberMe: false,
-        });
+        await authClient.signIn.email(
+          {
+            email: formData.email,
+            password: formData.password,
+            callbackURL: "/dashboard",
+            rememberMe: false,
+          },
+          {
+            onSuccess: (ctx) => {
+              message.success("登录成功");
+            },
+            onError: (ctx) => {
+              // 处理错误
+              if (ctx.error.status === 403) {
+                verifyEmail();
+                return;
+              }
+              // 也可以显示原始错误信息
+              throw ctx.error;
+            },
+          },
+        );
+
+        // 重定向到仪表板或登录页面
       } else {
         console.log("注册请求:", formData);
-        const { data, error } = await authClient.signUp.email(
+        await authClient.signUp.email(
           {
             email: formData.email, // 用户邮箱地址
             password: formData.password, // 用户密码 -> 默认至少 8 个字符
@@ -44,20 +89,20 @@ export default function LoginRegisterPage() {
             callbackURL: "/dashboard", // 用户验证邮箱后重定向的 URL（可选）
           },
           {
-            onRequest: (ctx) => {
-              console.log("ctx:", ctx);
-              // 显示加载状态
-            },
             onSuccess: (ctx) => {
               console.log("ctx:", ctx);
+              message.success("注册成功");
               // 重定向到仪表板或登录页面
             },
             onError: (ctx) => {
-              console.log("ctx:", ctx);
+              if (ctx.error.status === 403) {
+                verifyEmail();
+                return;
+              }
               throw ctx.error;
               // 显示错误信息
             },
-          }
+          },
         );
       }
     } catch (error: any) {
@@ -108,13 +153,12 @@ export default function LoginRegisterPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   姓名
                 </label>
-                <input
+                <Input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  className="input-field"
                   placeholder="请输入你的姓名"
                 />
               </div>
@@ -124,13 +168,12 @@ export default function LoginRegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 邮箱
               </label>
-              <input
+              <Input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
                 required
-                className="input-field"
                 placeholder="请输入你的邮箱"
               />
             </div>
@@ -139,13 +182,11 @@ export default function LoginRegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 密码
               </label>
-              <input
-                type="password"
+              <Password
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
                 required
-                className="input-field"
                 placeholder="请输入密码"
               />
             </div>
@@ -153,7 +194,29 @@ export default function LoginRegisterPage() {
             {/* 登录页显示忘记密码 */}
             {isLogin && (
               <div className="text-right">
-                <a href="#" className="text-sm text-primary hover:underline">
+                <a
+                  href="#"
+                  className="text-sm text-primary hover:underline"
+                  onClick={async () => {
+                    if (!formData.email) {
+                      message.error("请输入邮箱");
+                      return;
+                    }
+                    authClient
+                      .requestPasswordReset({
+                        email: formData.email, // required
+                        redirectTo: "/reset-password?email=" + formData.email,
+                      })
+                      .then((ctx) => {
+                        console.log("ctx:", ctx);
+                        message.success("密码重置链接已发送");
+                      })
+                      .catch((error) => {
+                        console.log("error:", error);
+                        message.error(error.message || "发送失败");
+                      });
+                  }}
+                >
                   忘记密码？
                 </a>
               </div>
@@ -168,9 +231,8 @@ export default function LoginRegisterPage() {
 
       {/* 右侧图片展示区域 */}
       <div className="hidden md:block w-1/2 relative">
-        {/* 替换为你参考图的图片地址（本地图片放public目录，远程图片直接填URL） */}
         <Image
-          src="https://t.alcy.cc/pc" // 建议将参考图放到public目录下，命名为bg-image.jpg
+          src="https://t.alcy.cc/pc"
           alt="背景图"
           fill
           className="object-cover"
