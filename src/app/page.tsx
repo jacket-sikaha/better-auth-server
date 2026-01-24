@@ -1,5 +1,6 @@
 "use client";
 import { authClient } from "@/lib/auth-client";
+import OtherProviderLogin from "@/ui/other-provider-login";
 import { App, Input } from "antd";
 import Image from "next/image";
 import { useState } from "react";
@@ -114,15 +115,15 @@ export default function LoginRegisterPage() {
     <div className="min-h-screen flex">
       {/* 左侧表单区域 */}
       <div className="w-full md:w-1/2 flex flex-col justify-center p-8 md:p-16">
-        <div className="max-w-md mx-auto w-full">
+        <div className="max-w-md mx-auto w-full flex flex-col gap-3">
           {/* 标题/Logo区（参考图风格） */}
-          <div className="mb-8">
+          <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Soulgame</h1>
             <p className="text-gray-600">登录/注册你的账号，开启专属体验</p>
           </div>
 
           {/* 登录/注册标签切换 */}
-          <div className="flex mb-6 border-b">
+          <div className="flex border-b">
             <button
               onClick={() => setIsLogin(true)}
               className={`px-4 py-2 font-medium border-b-2 ${
@@ -225,6 +226,7 @@ export default function LoginRegisterPage() {
             <button type="submit" className="btn-primary">
               {isLogin ? "登录" : "注册"}
             </button>
+            <OtherProviderLogin />
           </form>
         </div>
       </div>
