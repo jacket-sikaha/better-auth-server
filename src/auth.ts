@@ -3,9 +3,16 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 // 如果您的 Prisma 文件位于其他位置，可以更改路径
 import { prismaClient } from "../lib/prisma";
 import { sendCheckinEMail } from "./lib/email";
-import { redirect } from "next/navigation";
+import { bearer, jwt } from "better-auth/plugins";
 
 export const auth = betterAuth({
+  plugins: [
+    jwt({
+      jwt: {},
+    }),
+    bearer(),
+  ],
+
   database: prismaAdapter(prismaClient, {
     provider: "sqlite", // 或 "mysql", "postgresql", ...等
   }),
@@ -40,10 +47,27 @@ export const auth = betterAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     },
   },
+  user: {
+    deleteUser: {
+      deleteTokenExpiresIn: 1000,
+    },
+  },
   session: {
-    cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60, // 缓存持续时间，单位为秒
+    expiresIn: 600,
+    updateAge: 60 * 60 * 24,
+    freshAge: 0, // 5 分钟（如果会话在最近 5 分钟内创建，则视为新鲜会话）
+    // disableSessionRefresh: true,
+    // cookieCache: {
+    //   enabled: true,
+    //   maxAge: 5 * 60, // 缓存持续时间，单位为秒
+    // },
+    logger: {
+      disabled: false,
+      level: "warn",
+      log: (level: string, message: string, ...args: any) => {
+        // 自定义日志记录实现
+        console.log(`[${level}] ${message}`, ...args);
+      },
     },
   },
 });

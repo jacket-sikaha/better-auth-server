@@ -8,6 +8,7 @@
     "build": "next build --turbopack --no-lint",
     "start": "next start",
     "dbgui": "prisma studio --config ./prisma.config.ts",
+    "db:push": "prisma db push",
     "auth": "npx auth secret",
     "lint": "eslint"
   },
@@ -25,6 +26,7 @@
     "dayjs": "^1.11.18",
     "dotenv": "17.2.3",
     "immer": "^11.1.3",
+    "jose": "6.1.3",
     "next": "^16.1.2",
     "nodemailer": "7.0.12",
     "prisma": "7.2.0",
