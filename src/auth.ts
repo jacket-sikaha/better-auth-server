@@ -3,10 +3,19 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 // 如果您的 Prisma 文件位于其他位置，可以更改路径
 import { prismaClient } from "../lib/prisma";
 import { sendCheckinEMail } from "./lib/email";
-import { bearer, jwt } from "better-auth/plugins";
+import { bearer, customSession, jwt } from "better-auth/plugins";
+import dayjs from "dayjs";
 
 export const auth = betterAuth({
   plugins: [
+    customSession(async ({ user, session }) => {
+      // 自定义会话过期时间（下面session的expiresIn 配置无效）
+      session.expiresAt = dayjs(session.createdAt).add(10, "minute").toDate();
+      return {
+        user,
+        session,
+      };
+    }),
     jwt({
       jwt: {},
     }),
@@ -47,20 +56,13 @@ export const auth = betterAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     },
   },
-  user: {
-    deleteUser: {
-      deleteTokenExpiresIn: 1000,
-    },
-  },
+
   session: {
-    expiresIn: 600,
-    updateAge: 60 * 60 * 24,
-    freshAge: 0, // 5 分钟（如果会话在最近 5 分钟内创建，则视为新鲜会话）
-    // disableSessionRefresh: true,
-    // cookieCache: {
-    //   enabled: true,
-    //   maxAge: 5 * 60, // 缓存持续时间，单位为秒
-    // },
+    disableSessionRefresh: true,
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60, // 缓存持续时间，单位为秒
+    },
     logger: {
       disabled: false,
       level: "warn",
