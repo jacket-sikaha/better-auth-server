@@ -6,10 +6,18 @@ import { prismaClient } from "../lib/prisma";
 import { sendCheckinEMail } from "./lib/email";
 
 export const auth = betterAuth({
+  trustedOrigins: [
+    "http://localhost:3000",
+    "http://localhost:5173", // 👈 必须加这个
+    // "*.example.com",             // 信任 example.com 的所有子域名
+    // "https://*.example.com",     // 仅信任 HTTPS 子域名
+    // "http://*.dev.example.com"   // 信任 dev.example.com 的 HTTP 子域名
+  ],
+
   plugins: [
     jwt({
       jwt: {
-        expirationTime: "60s",
+        expirationTime: "30min",
       },
     }),
     openAPI(),

@@ -1,6 +1,6 @@
 "use client";
 import { authClient, TOKEN_KEY, validateSession } from "@/lib/auth-client";
-import { validateToken, verifyOneTimeToken } from "@/lib/token";
+import { validateJWTToken, verifyOneTimeToken } from "@/lib/token";
 import { Button } from "antd";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -47,8 +47,15 @@ function Dashboard() {
       </div>
       <div
         onClick={async () => {
-          const res = await validateToken(jwtToken);
-          console.log("res00:", res);
+          const res = await fetch("/api/token/verify", {
+            method: "POST",
+            body: JSON.stringify({ token: jwtToken }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          const data = await res.json();
+          console.log("校验jwt 是否有效:", data);
         }}
       >
         校验jwt 是否有效

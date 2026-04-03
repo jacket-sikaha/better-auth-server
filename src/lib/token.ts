@@ -1,24 +1,19 @@
 import dayjs from "dayjs";
-import { jwtVerify, createLocalJWKSet } from "jose";
+import { jwtVerify, createLocalJWKSet, createRemoteJWKSet } from "jose";
 import { authClient } from "./auth-client";
 
-export async function validateToken(token: string) {
+export async function validateJWTToken(token: string) {
   try {
-    /**
-     * 这是从 /api/auth/jwks 端点
-     * 获取的 JWKS
-     */
-    const storedJWKS = await fetch("/api/auth/jwks");
-    const JWKS = createLocalJWKSet({
-      keys: (await storedJWKS.json())?.keys!,
-    });
+    //     浏览器端：可以用 /api/xxx
+    // 服务端：必须用完整地址 http://域名/api/xxx
+    const JWKS = createRemoteJWKSet(
+      new URL("/api/auth/jwks", process.env.NEXT_PUBLIC_BETTER_AUTH_URL),
+    );
     const { payload } = await jwtVerify(token, JWKS, {
-      issuer: process.env.BASE_URL, // 应与您的 JWT 签发者匹配，即 BASE_URL
-      audience: process.env.BASE_URL, // 应与您的 JWT 受众匹配，默认为 BASE_URL
+      issuer: process.env.NEXT_PUBLIC_BETTER_AUTH_URL, // 应与您的 JWT 签发者匹配，即 BASE_URL
+      audience: process.env.NEXT_PUBLIC_BETTER_AUTH_URL, // 应与您的 JWT 受众匹配，默认为 BASE_URL
     });
-    payload.exp
-      ? console.log(dayjs.unix(payload.exp).format())
-      : console.log("No exp found");
+
     return payload;
   } catch (error) {
     console.error("Token validation failed:", error);

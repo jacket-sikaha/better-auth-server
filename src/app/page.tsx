@@ -3,13 +3,15 @@ import { authClient } from "@/lib/auth-client";
 import OtherProviderLogin from "@/ui/other-provider-login";
 import { App, Input } from "antd";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 const { Password } = Input;
 
 export default function LoginRegisterPage() {
   const { message, modal, notification } = App.useApp(); // 切换登录/注册标签
   const [isLogin, setIsLogin] = useState(true);
-
+  const params = useSearchParams();
+  const redirectURL = params.get("redirectURL");
   // 表单状态管理
   const [formData, setFormData] = useState({
     email: "",
@@ -59,12 +61,14 @@ export default function LoginRegisterPage() {
           {
             email: formData.email,
             password: formData.password,
-            callbackURL: "/dashboard",
+            // callbackURL: "/result?redirectURL=" + redirectURL,
+            callbackURL: "/result",
             rememberMe: false,
           },
           {
             onSuccess: (ctx) => {
               message.success("登录成功");
+              redirectURL && localStorage.setItem("redirectURL", redirectURL);
             },
             onError: (ctx) => {
               // 处理错误
