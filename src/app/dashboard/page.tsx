@@ -1,19 +1,15 @@
 "use client";
 import { authClient, TOKEN_KEY, validateSession } from "@/lib/auth-client";
-import { validateToken } from "@/lib/token";
+import { validateToken, verifyOneTimeToken } from "@/lib/token";
 import { Button } from "antd";
 import { redirect } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 function Dashboard() {
   const { data: session } = authClient.useSession();
-  useEffect(() => {
-    validateToken(localStorage.getItem(TOKEN_KEY) || "")
-      .then((result) => {
-        console.log("res00:", result);
-      })
-      .catch((err) => {});
-  }, []);
+  const [token, setToken] = useState("");
+  const [jwtToken, setJwtToken] = useState("");
+
   if (!session) {
     return (
       <div className=" h-svh flex flex-col items-center justify-center gap-4">
@@ -24,7 +20,7 @@ function Dashboard() {
   }
 
   return (
-    <div className=" h-svh flex flex-col items-center justify-center gap-4">
+    <div className="h-svh flex flex-col items-center justify-center gap-4">
       <h1>欢迎 {session.user.name}</h1>
       <div
         onClick={async () => {
@@ -35,14 +31,47 @@ function Dashboard() {
         校验session 是否有效
       </div>
       <div
+        className="w-64"
+        onClick={() => {
+          authClient?.getSession({
+            fetchOptions: {
+              onSuccess: (ctx) => {
+                const jwt = ctx.response.headers.get("set-auth-jwt");
+                setJwtToken(jwt || "");
+              },
+            },
+          });
+        }}
+      >
+        当前jwt: {jwtToken}
+      </div>
+      <div
         onClick={async () => {
-          const res = await validateToken(
-            localStorage.getItem(TOKEN_KEY) || "",
-          );
+          const res = await validateToken(jwtToken);
           console.log("res00:", res);
         }}
       >
         校验jwt 是否有效
+      </div>
+      <div
+        className="w-64"
+        onClick={() => {
+          authClient.oneTimeToken.generate().then((res) => {
+            console.log("res:", res);
+            setToken(res.data?.token || "");
+            console.log("oneTimeToken:", res.data?.token);
+          });
+        }}
+      >
+        重新生成oneTimeToken: {token}
+      </div>
+      <div
+        onClick={async () => {
+          const result = await verifyOneTimeToken(token);
+          console.log("result:", result);
+        }}
+      >
+        校验oneTimeToken 是否有效
       </div>
       <Button
         onClick={() =>
