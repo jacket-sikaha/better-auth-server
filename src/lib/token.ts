@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import { jwtVerify, createLocalJWKSet, createRemoteJWKSet } from "jose";
 import { authClient } from "./auth-client";
+import { JWTExpired } from "jose/errors";
 
 export async function validateJWTToken(token: string) {
   try {
@@ -13,10 +14,12 @@ export async function validateJWTToken(token: string) {
       issuer: process.env.NEXT_PUBLIC_BETTER_AUTH_URL, // 应与您的 JWT 签发者匹配，即 BASE_URL
       audience: process.env.NEXT_PUBLIC_BETTER_AUTH_URL, // 应与您的 JWT 受众匹配，默认为 BASE_URL
     });
-
     return payload;
-  } catch (error) {
-    console.error("Token validation failed:", error);
+  } catch (error: any) {
+    console.error("Token validation failed:", error.message);
+    if (error instanceof JWTExpired) {
+      return null;
+    }
     throw error;
   }
 }
