@@ -25,11 +25,13 @@ export const auth = betterAuth({
   ],
 
   database: prismaAdapter(prismaClient, {
-    provider: "sqlite", // 或 "mysql", "postgresql", ...等
+    // provider: "sqlite", // 或 "mysql", "postgresql", ...等
+    provider: "postgresql",
   }),
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    autoSignIn: false,
     sendResetPassword: async ({ user, url, token }, request) => {
       await sendCheckinEMail(
         user.email,

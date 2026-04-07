@@ -7,7 +7,7 @@ on:
       - "v*"
 env:
   REGISTRY: docker.io/sikaha # 或者 docker.io/your_username 等
-  IMAGE_NAME: frp-ui
+  IMAGE_NAME: better-auth-server
 
 jobs:
   push_to_registry:

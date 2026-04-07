@@ -91,7 +91,7 @@ export default function LoginRegisterPage() {
             password: formData.password, // 用户密码 -> 默认至少 8 个字符
             name: formData.name, // 用户显示名称
             image: formData.name, // 用户头像 URL（可选）
-            callbackURL: "/dashboard", // 用户验证邮箱后重定向的 URL（可选）
+            callbackURL: "/", // 用户验证邮箱后重定向的 URL（可选）
           },
           {
             onSuccess: (ctx) => {
