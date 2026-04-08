@@ -1,41 +1,71 @@
-# FRP-UI
+# better-auth-server
+
+**View Chinese Documentation**: [README.md](README.md)
+
+[![DeepWiki Index](https://deepwiki.com/badge.svg)](https://deepwiki.com/jacket-sikaha/better-auth-server)
 
 <div align="center">
-  <a href="https://github.com/sikaha/FRP-UI">
-    <img src="https://raw.githubusercontent.com/fatedier/frp/master/docs/_static/logo.png" alt="FRP Logo" height="80">
-  </a>
   <p>
-    <b>A modern, user-friendly web interface for FRP management</b>
+    <b>better-auth-server</b>
+  </p>
+  <p>
+    🚀 Universal Authentication Service based on better-auth
   </p>
 </div>
 
 ## 📋 Project Overview
 
-FRP-UI is a modern management interface for FRP (Fast Reverse Proxy), providing an intuitive and user-friendly way to configure and manage FRP proxy services. Built with Next.js 15 and Ant Design 5, it supports user authentication, proxy configuration management, status monitoring, and more.
+better-auth-server is a universal authentication service built with Next.js and better-auth library, providing comprehensive user authentication solutions and token distribution capabilities. It can be easily integrated into any application system that requires authentication.
 
-## 🚀 Key Features
+### Key Features
 
-- ✅ User authentication system to ensure configuration security
-- ✅ Real-time monitoring of FRP proxy status
-- ✅ Visual management of proxy configurations (add, edit, delete)
-- ✅ Support for multiple proxy types (TCP, UDP, HTTP, HTTPS, etc.)
-- ✅ Online configuration file editing
-- ✅ Real-time configuration reloading
-- ✅ Docker containerized deployment
+- 🔐 **Complete Authentication System** - Supports email/password login, registration, password reset, and more
+- 🎯 **Token Distribution** - Generates and manages JWT tokens for inter-service authorization
+- 📦 **Containerized Deployment** - Supports Docker and Docker Compose one-click deployment
+- 🎨 **Modern UI** - Beautiful interface based on Ant Design
+- 📊 **Admin Panel** - Provides user management and system monitoring features
+- 🔌 **REST API** - Standardized authentication API interfaces
+
+## 🚀 Main Features
+
+### Authentication Features
+
+✅ **User Registration**
+
+- Email verification
+- Password strength checking
+
+✅ **User Login**
+
+- Email/password login
+- Remember me functionality
+
+✅ **Password Management**
+
+- Password reset
+
+✅ **Token Management**
+
+- JWT token generation
+- Token invalidation management
+
+✅ **Configuration Management**
+
+- Authentication policy configuration
+- Token expiration time setting
 
 ## 🛠️ Technology Stack
 
-| Technology/Framework | Version | Purpose |
-|---------------------|---------|--------|
-| Next.js | ^15.5.2 | React Framework |
-| React | ^19.1.0 | UI Library |
-| Ant Design | ^5.27.1 | UI Component Library |
-| TypeScript | ^5 | Type System |
-| Tailwind CSS | ^4 | Styling Framework |
-| NextAuth.js | ^5.0.0-beta.29 | Authentication System |
-| smol-toml | 1.4.2 | TOML Configuration Parser |
-| react-query | 3.39.3 | Data Request Management |
-| immer | 10.1.3 | Immutable Data Management |
+| Technology/Framework | Version | Purpose                |
+| -------------------- | ------- | ---------------------- |
+| Next.js              | ^16.0.0 | React Framework        |
+| React                | ^19.1.0 | UI Library             |
+| Ant Design           | ^6.0.0  | UI Component Library   |
+| TypeScript           | ^5      | Type System            |
+| Tailwind CSS         | ^4      | Styling Framework      |
+| better-auth          | ^1.5.0  | Authentication Library |
+| Prisma               | ^7.6.0  | ORM Framework          |
+| SQLite               | -       | Database               |
 
 ## 📦 Installation & Deployment
 
@@ -51,20 +81,22 @@ docker-compose up -d
 version: "3.8"
 
 services:
-  frp-ui:
-    image: docker.io/sikaha/frp-ui:latest
-    container_name: frp-ui
+  better-auth-server:
+    image: docker.io/sikaha/better-auth-server:latest
+    container_name: better-auth-server
     ports:
       - "3000:3000"
     environment:
-      - ORIGIN_SERVER=http://localhost:3000  # FRP server API address
-      - AUTH_SECRET=your-secret  # Replace with actual AUTH_SECRET
+      - AUTH_SECRET=your-secret # Replace with actual authentication secret
+      - DATABASE_URL=sqlite:///db/dev.db
+    volumes:
+      - ./db:/app/db
     restart: unless-stopped
     networks:
-      - frp-network
+      - auth-network
 
 networks:
-  frp-network:
+  auth-network:
     driver: bridge
 ```
 
@@ -76,6 +108,21 @@ pnpm install
 
 # Generate authentication secret
 pnpm auth
+
+# Initialize database
+pnpm prisma:init
+
+# Generate Prisma Client
+pnpm prisma:generate
+
+# Generate authentication system schema
+pnpm auth:generate
+
+# Update local generated/prisma/models files
+pnpm prisma:generate
+
+# Sync schema to database
+pnpm prisma:migrate
 
 # Start development server
 pnpm dev
@@ -89,48 +136,101 @@ pnpm start
 
 ## 🔧 Environment Variables
 
-| Environment Variable | Description | Default Value |
-|---------------------|-------------|--------------|
-| ORIGIN_SERVER | FRP server API address | - |
-| AUTH_SECRET | NextAuth.js authentication secret | - |
-| PORT | Application port | 3000 |
-
-## 📱 Interface Features
-
-### 1. Status Monitoring Page
-
-The status monitoring page displays the running status of all FRP proxies, including proxy name, protocol type, local address, remote address, and running status.
-
-### 2. Proxy Configuration Management
-
-The proxy configuration management page provides an intuitive interface to add, edit, and delete FRP proxy configurations, supporting multiple proxy types and advanced configuration options.
-
-### 3. Configuration File Editing
-
-The configuration file editing page provides an online editor that supports direct editing of FRP configuration files with real-time updates.
+| Environment Variable | Description             | Default Value |
+| -------------------- | ----------------------- | ------------- |
+| AUTH_SECRET          | Authentication secret   | -             |
+| DATABASE_URL         | Database connection URL | -             |
+| PORT                 | Application port        | 3000          |
+| SMTP_HOST            | SMTP server address     | -             |
+| SMTP_PORT            | SMTP server port        | 587           |
+| SMTP_USER            | SMTP username           | -             |
+| SMTP_PASS            | SMTP password           | -             |
+| SMTP_FROM            | Sender email address    | -             |
 
 ## 📡 API Interfaces
 
-FRP-UI interacts with the FRP server through the following API interfaces:
+### Authentication Interfaces
 
-- `GET /api/status` - Get FRP proxy status
-- `GET /api/config` - Get FRP configuration file
-- `PUT /api/config` - Update FRP configuration file
-- `GET /api/reload` - Reload FRP configuration
+#### Register
 
-## 📝 Notes
+```
+POST /api/auth/register
+Content-Type: application/json
 
-1. Proxy names cannot contain Chinese characters
-2. Required fields vary depending on proxy type:
-   - TCP/UDP proxies require remote_port
-   - HTTP proxies require vhost_http_port
-   - HTTPS proxies require vhost_https_port
-3. Proxy configuration names cannot be duplicated
-4. Custom field keys cannot contain Chinese characters or special characters
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+#### Login
+
+```
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+#### Get Token
+
+```
+POST /api/auth/token
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+#### Refresh Token
+
+```
+POST /api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "your-refresh-token"
+}
+```
+
+#### Verify Token
+
+```
+POST /api/auth/verify
+Content-Type: application/json
+
+{
+  "token": "your-jwt-token"
+}
+```
+
+## 📱 Interface Features
+
+### Login Page
+
+- Email/password login
+- Forgot password functionality
+- Responsive design
+
+### Registration Page
+
+- User registration form
+- Password strength indicator
+- Email verification
+
+### Control Panel
+
+- User information display
+- Token management
 
 ## 🤝 Contribution
 
-Contributions to FRP-UI are welcome! Feel free to submit issues and pull requests.
+Contributions to better-auth-server are welcome! Feel free to submit issues and pull requests.
 
 ## 📄 License
 
@@ -139,5 +239,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Contact
 
 For questions or suggestions, please submit issues in the GitHub repository.
-
-**View Chinese Documentation**: [README.md](README.md)
