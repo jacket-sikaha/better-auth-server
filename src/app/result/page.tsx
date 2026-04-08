@@ -20,6 +20,9 @@ function Result() {
         return redirect(redirectURL + "?token=" + data.token);
       }, 3000);
     }
+    return () => {
+      localStorage.removeItem("redirectURL");
+    };
   }, []);
 
   if (!session) {

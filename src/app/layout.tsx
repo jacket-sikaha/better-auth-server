@@ -7,9 +7,8 @@ import { App } from "antd";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FRP Manager UI",
-  description:
-    "This is an example site to demonstrate how to use NextAuth.js for authentication",
+  title: "Better Auth Server",
+  description: "Universal Authentication Service based on better-auth",
 };
 
 export default function RootLayout({ children }: React.PropsWithChildren) {
