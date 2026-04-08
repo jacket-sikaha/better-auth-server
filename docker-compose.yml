@@ -2,8 +2,8 @@ version: "3.8"
 
 services:
   better-auth:
-    image: docker.io/sikaha/better-auth:latest # 注意：GitHub Action实际构建的是版本标签(v*)而非latest，这里使用latest作为示例，实际使用时应指定具体版本号
-    container_name: better-auth
+    image: docker.io/sikaha/better-auth-server:latest # 注意：GitHub Action实际构建的是版本标签(v*)而非latest，这里使用latest作为示例，实际使用时应指定具体版本号
+    container_name: better-auth-server
     ports:
       - "3000:3000"
     environment:
@@ -11,8 +11,7 @@ services:
       # 例如：NEXTAUTH_URL=http://localhost:3000
       - ORIGIN_SERVER=http://localhost:3000
       - AUTH_SECRET=your-secret # 替换为实际的AUTH_SECRET
-    volumes:
-      []
+    volumes: []
       # 如果需要持久化数据或配置文件，可以添加卷挂载
       # - ./data:/app/data
     restart: unless-stopped
